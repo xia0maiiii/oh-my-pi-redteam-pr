@@ -7,6 +7,7 @@
  */
 import type { AssistantMessage, ImageContent } from "@oh-my-pi/pi-ai";
 import { logger, sanitizeText } from "@oh-my-pi/pi-utils";
+import { writeRedTeamWorkerReport } from "../redteam-worker";
 import type { AgentSession } from "../session/agent-session";
 import { isSilentAbort } from "../session/messages";
 import { flushTelemetryExport } from "../telemetry-export";
@@ -24,6 +25,8 @@ export interface PrintModeOptions {
 	initialMessage?: string;
 	/** Images to attach to the initial message */
 	initialImages?: ImageContent[];
+	/** Optional Markdown report path for single-shot worker runs */
+	reportPath?: string;
 }
 
 /**
@@ -31,7 +34,7 @@ export interface PrintModeOptions {
  * Sends prompts to the agent and outputs the result.
  */
 export async function runPrintMode(session: AgentSession, options: PrintModeOptions): Promise<void> {
-	const { mode, messages = [], initialMessage, initialImages } = options;
+	const { mode, messages = [], initialMessage, initialImages, reportPath } = options;
 
 	// Emit session header for JSON mode
 	if (mode === "json") {
@@ -104,11 +107,16 @@ export async function runPrintMode(session: AgentSession, options: PrintModeOpti
 				process.stderr.write(`${sanitizeText(assistantMsg.errorMessage)}\n`);
 			}
 
+			const textBlocks = assistantMsg.content
+				.filter((content): content is { type: "text"; text: string } => content.type === "text")
+				.map(content => content.text);
+			if (reportPath && textBlocks.length > 0) {
+				await writeRedTeamWorkerReport(reportPath, textBlocks.join("\n\n"));
+			}
+
 			// Output text content
-			for (const content of assistantMsg.content) {
-				if (content.type === "text") {
-					process.stdout.write(`${sanitizeText(content.text)}\n`);
-				}
+			for (const text of textBlocks) {
+				process.stdout.write(`${sanitizeText(text)}\n`);
 			}
 		}
 	}

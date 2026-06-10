@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added a red-team worker print-mode default that injects a Web/API testing prompt, keeps runs single-agent by default, and writes the final Markdown response to `REPORT.md`.
+
 ## [15.10.12] - 2026-06-10
 
 ### Added
