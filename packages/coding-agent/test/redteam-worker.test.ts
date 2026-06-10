@@ -8,7 +8,6 @@ import {
 	getRedTeamWorkerReportPath,
 	isRedTeamWorkerRun,
 	REDTEAM_WORKER_REPORT_NAME,
-	REDTEAM_WORKER_TOOL_NAMES,
 	writeRedTeamWorkerReport,
 } from "@oh-my-pi/pi-coding-agent/redteam-worker";
 
@@ -28,20 +27,6 @@ describe("red-team worker defaults", () => {
 		expect(isRedTeamWorkerRun({ print: true, mode: "text" })).toBe(true);
 		expect(isRedTeamWorkerRun({ print: true, mode: "json" })).toBe(false);
 		expect(isRedTeamWorkerRun({ mode: "text" })).toBe(false);
-	});
-
-	it("uses a single-agent Web/API tool baseline", () => {
-		expect(REDTEAM_WORKER_TOOL_NAMES).toEqual([
-			"read",
-			"bash",
-			"search",
-			"find",
-			"web_search",
-			"browser",
-			"eval",
-			"write",
-		]);
-		expect(REDTEAM_WORKER_TOOL_NAMES).not.toContain("task");
 	});
 
 	it("overrides task settings to prevent recursive subagent work", () => {

@@ -6,17 +6,6 @@ import redTeamWorkerSystemPrompt from "./prompts/system/redteam-worker.md" with 
 
 export const REDTEAM_WORKER_REPORT_NAME = "REPORT.md";
 
-export const REDTEAM_WORKER_TOOL_NAMES: readonly string[] = [
-	"read",
-	"bash",
-	"search",
-	"find",
-	"web_search",
-	"browser",
-	"eval",
-	"write",
-] as const;
-
 export function isRedTeamWorkerRun(args: Pick<Args, "mode" | "print">): boolean {
 	return args.print === true && (args.mode === undefined || args.mode === "text");
 }
