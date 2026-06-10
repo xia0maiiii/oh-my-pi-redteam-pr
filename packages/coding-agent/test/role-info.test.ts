@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { getRoleInfo } from "@oh-my-pi/pi-coding-agent/config/model-roles";
+import { getKnownRoleIds, getRoleInfo } from "@oh-my-pi/pi-coding-agent/config/model-roles";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 
 describe("getRoleInfo", () => {
@@ -20,6 +20,16 @@ describe("getRoleInfo", () => {
 			name: "Thinking",
 			color: "accent",
 			tag: "SLOW",
+		});
+		expect(getRoleInfo("execute", settings)).toEqual({
+			name: "Executor",
+			color: "warning",
+			tag: "EXEC",
+		});
+		expect(getRoleInfo("report", settings)).toEqual({
+			name: "Reporter",
+			color: "success",
+			tag: "REPORT",
 		});
 	});
 
@@ -62,5 +72,28 @@ describe("getRoleInfo", () => {
 			name: "My Smol",
 			color: "success",
 		});
+	});
+
+	test("lists red-team routing roles with built-ins before configured custom roles", () => {
+		const settings = Settings.isolated({
+			cycleOrder: ["custom-stage"],
+			modelRoles: {
+				"custom-stage": "anthropic/claude-sonnet-4-5",
+			},
+		});
+
+		expect(getKnownRoleIds(settings)).toEqual([
+			"default",
+			"smol",
+			"slow",
+			"vision",
+			"plan",
+			"execute",
+			"report",
+			"designer",
+			"commit",
+			"task",
+			"custom-stage",
+		]);
 	});
 });
