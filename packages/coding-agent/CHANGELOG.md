@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added a `record_vulnerability` builtin tool that stores JSONL findings and split Burp raw request/response evidence for red-team worker runs.
+
 ## [15.10.12] - 2026-06-10
 
 ### Added
