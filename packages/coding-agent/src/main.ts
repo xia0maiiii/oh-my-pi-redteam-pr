@@ -6,6 +6,7 @@
  */
 import * as fsSync from "node:fs";
 import * as os from "node:os";
+import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
 import { EventLoopKeepalive } from "@oh-my-pi/pi-agent-core";
 import type { ImageContent } from "@oh-my-pi/pi-ai";
@@ -57,6 +58,13 @@ import type { PrintModeOptions } from "./modes/print-mode";
 import { CURRENT_SETUP_VERSION } from "./modes/setup-version";
 import { initTheme, stopThemeWatcher } from "./modes/theme/theme";
 import type { SubmittedUserInput } from "./modes/types";
+import {
+	applyRedTeamWorkerSettings,
+	buildRedTeamWorkerSystemPrompt,
+	getRedTeamWorkerReportPath,
+	isRedTeamWorkerRun,
+	REDTEAM_WORKER_TOOL_NAMES,
+} from "./redteam-worker";
 import {
 	type CreateAgentSessionOptions,
 	type CreateAgentSessionResult,
@@ -842,10 +850,12 @@ async function buildSessionOptions(
 	// (handled by caller before createAgentSession)
 
 	// System prompt
-	if (resolvedSystemPrompt && resolvedAppendPrompt) {
-		options.systemPrompt = defaultPrompt => [resolvedSystemPrompt, resolvedAppendPrompt, ...defaultPrompt.slice(1)];
-	} else if (resolvedSystemPrompt) {
-		options.systemPrompt = defaultPrompt => [resolvedSystemPrompt, ...defaultPrompt.slice(1)];
+	const defaultRedTeamSystemPrompt = isRedTeamWorkerRun(parsed) ? buildRedTeamWorkerSystemPrompt() : undefined;
+	const primarySystemPrompt = resolvedSystemPrompt ?? defaultRedTeamSystemPrompt;
+	if (primarySystemPrompt && resolvedAppendPrompt) {
+		options.systemPrompt = defaultPrompt => [primarySystemPrompt, resolvedAppendPrompt, ...defaultPrompt.slice(1)];
+	} else if (primarySystemPrompt) {
+		options.systemPrompt = defaultPrompt => [primarySystemPrompt, ...defaultPrompt.slice(1)];
 	} else if (resolvedAppendPrompt) {
 		options.systemPrompt = defaultPrompt => [...defaultPrompt, resolvedAppendPrompt];
 	}
@@ -855,6 +865,8 @@ async function buildSessionOptions(
 		options.toolNames = parsed.tools && parsed.tools.length > 0 ? parsed.tools : [];
 	} else if (parsed.tools) {
 		options.toolNames = parsed.tools;
+	} else if (isRedTeamWorkerRun(parsed)) {
+		options.toolNames = [...REDTEAM_WORKER_TOOL_NAMES];
 	}
 
 	if (parsed.noLsp) {
@@ -1012,6 +1024,10 @@ export async function runRootCommand(
 		Bun.env.PI_NO_TITLE = "1";
 	}
 	const mode = parsedArgs.mode || "text";
+	const redTeamWorkerRun = isRedTeamWorkerRun(parsedArgs);
+	if (redTeamWorkerRun) {
+		applyRedTeamWorkerSettings(settingsInstance);
+	}
 	const isProtocolMode = mode === "rpc" || mode === "rpc-ui" || mode === "acp";
 	// Protocol modes own stdin; treating it as prompt text would consume JSON-RPC frames before their transports start.
 	const pipedInput = isProtocolMode ? undefined : await logger.time("readPipedInput", readPipedInput);
@@ -1360,6 +1376,9 @@ export async function runRootCommand(
 				messages: initialArgs.messages,
 				initialMessage,
 				initialImages,
+				reportPath: redTeamWorkerRun
+					? getRedTeamWorkerReportPath(path.resolve(sessionOptions.cwd ?? cwd))
+					: undefined,
 			});
 			if ($env.PI_TIMING) {
 				logger.printTimings();

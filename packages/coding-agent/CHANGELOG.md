@@ -6,6 +6,7 @@
 
 - Added a `record_vulnerability` builtin tool that stores JSONL findings and split Burp raw request/response evidence for red-team worker runs.
 - Added built-in `modelRoles.execute` and `modelRoles.report` metadata so worker modes can route planning, execution, and reporting phases independently.
+- Added a red-team worker print-mode default that injects a Web/API testing prompt, keeps runs single-agent by default, and writes the final Markdown response to `REPORT.md`.
 
 ## [15.10.12] - 2026-06-10
 
