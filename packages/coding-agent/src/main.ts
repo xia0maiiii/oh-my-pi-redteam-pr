@@ -57,6 +57,7 @@ import type { PrintModeOptions } from "./modes/print-mode";
 import { CURRENT_SETUP_VERSION } from "./modes/setup-version";
 import { initTheme, stopThemeWatcher } from "./modes/theme/theme";
 import type { SubmittedUserInput } from "./modes/types";
+import { applyRedTeamToolsetSettings, getRedTeamWorkerToolNames, isRedTeamToolsetRun } from "./redteam-toolset";
 import {
 	type CreateAgentSessionOptions,
 	type CreateAgentSessionResult,
@@ -70,7 +71,7 @@ import { resolveResumableSession, type SessionInfo, SessionManager } from "./ses
 import { discoverTitleSystemPromptFile, resolvePromptInput } from "./system-prompt";
 import { initTelemetryExport, isTelemetryExportEnabled } from "./telemetry-export";
 import { AUTO_THINKING } from "./thinking";
-import { discoverStartupLspServers, type LspStartupServerInfo } from "./tools";
+import { BUILTIN_TOOLS, discoverStartupLspServers, type LspStartupServerInfo } from "./tools";
 import {
 	getChangelogPath,
 	getNewEntries,
@@ -855,6 +856,8 @@ async function buildSessionOptions(
 		options.toolNames = parsed.tools && parsed.tools.length > 0 ? parsed.tools : [];
 	} else if (parsed.tools) {
 		options.toolNames = parsed.tools;
+	} else if (isRedTeamToolsetRun(parsed)) {
+		options.toolNames = getRedTeamWorkerToolNames(Object.keys(BUILTIN_TOOLS));
 	}
 
 	if (parsed.noLsp) {
@@ -1004,6 +1007,8 @@ export async function runRootCommand(
 		applyRpcDefaultSettingOverrides(settingsInstance);
 	} else if (parsedArgs.mode === "acp") {
 		applyAcpDefaultSettingOverrides(settingsInstance);
+	} else if (isRedTeamToolsetRun(parsedArgs)) {
+		applyRedTeamToolsetSettings(settingsInstance);
 	}
 	if (parsedArgs.noPty || parsedArgs.mode === "rpc-ui") {
 		Bun.env.PI_NO_PTY = "1";

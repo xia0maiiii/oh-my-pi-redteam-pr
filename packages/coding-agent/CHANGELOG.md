@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Constrained default text print-mode worker tools to the Web/API red-team baseline and disabled generic bundled subagents by default.
+
 ## [15.10.12] - 2026-06-10
 
 ### Added
