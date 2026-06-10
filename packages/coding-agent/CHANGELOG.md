@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added red-team worker documentation, a local mock HTTP smoke task, and artifact-contract fixtures for `REPORT.md`, JSONL findings, and split Burp raw packets.
+
 ## [15.10.12] - 2026-06-10
 
 ### Added
