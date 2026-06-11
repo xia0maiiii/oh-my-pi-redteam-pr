@@ -77,8 +77,8 @@ import { resolveResumableSession, type SessionInfo, SessionManager } from "./ses
 import { discoverTitleSystemPromptFile, resolvePromptInput } from "./system-prompt";
 import { initTelemetryExport, isTelemetryExportEnabled } from "./telemetry-export";
 import { AUTO_THINKING } from "./thinking";
-import { BUILTIN_TOOLS } from "./tools";
 import type { LspStartupServerInfo } from "./tools";
+import { BUILTIN_TOOLS } from "./tools";
 import {
 	getChangelogPath,
 	getNewEntries,

@@ -40,7 +40,6 @@ describe("red-team worker defaults", () => {
 		expect(calls).toEqual([
 			{ key: "todo.eager", value: false },
 			{ key: "task.eager", value: false },
-			{ key: "task.simple", value: "independent" },
 			{ key: "task.maxConcurrency", value: 1 },
 			{ key: "task.maxRecursionDepth", value: 0 },
 		]);

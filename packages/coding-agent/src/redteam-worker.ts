@@ -17,7 +17,6 @@ export function buildRedTeamWorkerSystemPrompt(): string {
 export function applyRedTeamWorkerSettings(targetSettings: Pick<Settings, "override">): void {
 	targetSettings.override("todo.eager", false);
 	targetSettings.override("task.eager", false);
-	targetSettings.override("task.simple", "independent");
 	targetSettings.override("task.maxConcurrency", 1);
 	targetSettings.override("task.maxRecursionDepth", 0);
 }
